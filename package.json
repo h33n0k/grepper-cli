@@ -1,0 +1,59 @@
+{
+	"name": "grepper",
+	"version": "0.0.1",
+	"license": "MIT",
+	"author": "Valentin Gorrin <valentin@gorr.in> (https://tree.gorr.in)",
+	"description": "CLI tool for the grepper api.",
+	"homepage": "https://github.com/h33n0k/grepper-cli",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/h33n0k/grepper-cli"
+	},
+	"bugs": {
+		"url": "https://github.com/h33n0k/grepper-cli/issues"
+	},
+	"main": "dist/index.js",
+	"bin": "dist/index.js",
+	"scripts": {
+		"start": "node dist/index.js",
+		"dev": "ts-node-dev --transpile-only --quiet src/index.ts",
+		"lint": "eslint -c ./.eslintrc.cjs \"./**/*.{js,ts}\" --fix",
+		"test": "jest",
+		"clean": "rm -rf dist/; rm -rf pkg/",
+		"build": "npx tsc -p ./tsconfig.build.json",
+		"pkg": "pkg .",
+		"release": "standard-version"
+	},
+	"engines": {
+		"node": "18.18.0"
+	},
+	"pkg": {
+		"scripts": "dist/index.js",
+		"targets": [
+			"node18.5.0-linux-x64"
+		],
+		"outputPath": "bin/"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@eslint/js": "^9.7.0",
+		"@jest/globals": "^29.7.0",
+		"@types/jest": "^29.5.12",
+		"@types/node": "^20.14.11",
+		"eslint": "^8.57.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-import-resolver-alias": "^1.1.2",
+		"eslint-plugin-import": "^2.29.1",
+		"eslint-plugin-prettier": "^5.2.1",
+		"globals": "^15.8.0",
+		"jest": "^29.7.0",
+		"merge": "^2.1.1",
+		"pkg": "^5.8.1",
+		"prettier": "^3.3.3",
+		"standard-version": "^9.5.0",
+		"ts-jest": "^29.2.3",
+		"ts-node-dev": "^2.0.0",
+		"typescript": "^5.5.3",
+		"typescript-eslint": "^7.16.1"
+	}
+}

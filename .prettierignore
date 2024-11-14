@@ -1,0 +1,10 @@
+node_modules/
+dist/
+bin/
+
+test/
+jest.config.cjs
+
+LICENSE
+tsconfig.json
+tsconfig.*.json

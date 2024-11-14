@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"baseUrl": "dist"
+	},
+	"extends": "./tsconfig.json",
+	"exclude": [
+		"**/*.test.ts",
+		"test",
+		"**/*.d.ts",
+		"**/__mocks__/*"
+	]
+}
