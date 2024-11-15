@@ -74,7 +74,7 @@ export const handler = (argv: yargs.ArgumentsCamelCase<CommandArgs>) =>
 			}).pipe(
 				Effect.flatMap((input) =>
 					Effect.gen(function* () {
-						let prompt: PromptModel
+						let prompt: PromptModel | undefined
 						const results: {
 							cached: AnswerModel[]
 							fetched: AnswerModel[]
@@ -83,23 +83,21 @@ export const handler = (argv: yargs.ArgumentsCamelCase<CommandArgs>) =>
 						if (config.useDatabase) {
 							prompt = yield* services.prompt.create(input)
 							results.cached = yield* services.prompt.getResults(prompt)
-						} else {
-							prompt = new PromptModel({ input })
 						}
 
-						return { prompt, results }
+						return { prompt, results, input }
 					})
 				),
-				Effect.flatMap(({ prompt, results }) =>
+				Effect.flatMap(({ prompt, results, input }) =>
 					Effect.gen(function* () {
-						let answers: AnswerModel[] = []
-						const fetched = yield* utils.api.search(prompt.input)
+						let answers: AnswerModel[] | schemas.answer.Answer[] = []
+						const fetched = yield* utils.api.search(prompt ? prompt.input : input)
 
-						if (config.useDatabase) {
+						if (prompt && config.useDatabase) {
 							yield* services.prompt.saveResults(prompt, fetched as schemas.answer.Answer[])
 							answers = yield* services.prompt.getResults(prompt)
 						} else {
-							answers = fetched.map((answer) => new AnswerModel(answer))
+							answers = [...fetched]
 						}
 
 						return answers
