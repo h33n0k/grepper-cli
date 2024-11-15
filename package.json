@@ -34,7 +34,17 @@
 		],
 		"outputPath": "bin/"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@colors/colors": "^1.6.0",
+		"@effect/schema": "^0.75.5",
+		"class-validator": "^0.14.1",
+		"effect": "^3.10.15",
+		"reflect-metadata": "^0.2.2",
+		"sequelize": "^6.37.5",
+		"sequelize-typescript": "^2.1.6",
+		"sqlite3": "^5.1.7",
+		"yargs": "^17.7.2"
+	},
 	"devDependencies": {
 		"@eslint/js": "^9.7.0",
 		"@jest/globals": "^29.7.0",
