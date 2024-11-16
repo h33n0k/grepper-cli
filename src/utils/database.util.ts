@@ -31,7 +31,6 @@ class SyncError extends Data.TaggedError('Sync') {
 	constructor(error: unknown) {
 		super()
 		this.error = error
-		console.log(this.error)
 	}
 }
 
@@ -42,7 +41,6 @@ export class QueryError extends Data.TaggedError('Query') {
 	constructor(error: unknown) {
 		super()
 		this.error = error
-		console.log(this.error)
 	}
 }
 

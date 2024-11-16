@@ -1,7 +1,7 @@
 import { Data, Effect, Schedule } from 'effect'
 import colors from '@colors/colors'
 import * as configUtil from './config.util'
-import * as inputUtil from './input.util'
+import { input } from '../interface'
 import { Schema } from '@effect/schema'
 import * as schemas from '../schemas'
 import logger from './logger.util'
@@ -115,7 +115,7 @@ const query = (url: string) =>
 	configUtil.get.pipe(
 		Effect.flatMap((config) => {
 			if (!config.api_key) {
-				return inputUtil
+				return input
 					.ask({
 						label: {
 							text: 'Your Grepper API',

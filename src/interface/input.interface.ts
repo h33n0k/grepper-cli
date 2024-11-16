@@ -10,7 +10,6 @@ class InterfaceError extends Data.TaggedError('Interface') {
 	constructor(error: unknown) {
 		super()
 		this.error = error
-		console.log(error)
 		this.message = 'Output error.'
 	}
 }
@@ -21,7 +20,6 @@ class InputError extends Data.TaggedError('Input') {
 	constructor(error: unknown) {
 		super()
 		this.error = error
-		console.log(error)
 		this.message = 'Invalid Input.'
 	}
 }
