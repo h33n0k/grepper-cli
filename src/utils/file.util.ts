@@ -5,7 +5,7 @@ import stream from 'stream'
 import { Effect, Data } from 'effect'
 
 class ConfigDirError extends Data.TaggedError('ConfigDir') {
-	public declare readonly title = 'Config Error'
+	public readonly title = 'Config Error'
 	public readonly message: string
 	constructor(error: 'platform') {
 		super()
@@ -18,7 +18,7 @@ class ConfigDirError extends Data.TaggedError('ConfigDir') {
 }
 
 export class PathError extends Data.TaggedError('Path') {
-	public declare readonly title = 'Invalid Path'
+	public readonly title = 'Invalid Path'
 	public readonly path: string
 	public readonly message: string
 	constructor(path: string) {
@@ -29,7 +29,7 @@ export class PathError extends Data.TaggedError('Path') {
 }
 
 export class FileError extends Data.TaggedError('File') {
-	public declare readonly title = 'File System'
+	public readonly title = 'File System'
 	public readonly code: string
 	public readonly message: string
 	public readonly path: string

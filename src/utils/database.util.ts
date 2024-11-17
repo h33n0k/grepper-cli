@@ -5,9 +5,9 @@ import { AnswerModel, PromptModel, MatchModel } from '../models'
 import * as fileUtil from './file.util'
 
 class CloseError extends Data.TaggedError('Close') {
-	public declare readonly title = 'Database Shutdown'
-	public declare readonly error: unknown
-	public declare readonly message: 'Could not properly disconnect from database.'
+	public readonly title = 'Database Shutdown'
+	public readonly error: unknown
+	public readonly message: 'Could not properly disconnect from database.'
 	constructor(error: unknown) {
 		super()
 		this.error = error
@@ -15,9 +15,9 @@ class CloseError extends Data.TaggedError('Close') {
 }
 
 class AuthError extends Data.TaggedError('Auth') {
-	public declare readonly title = 'Database Connection'
-	public declare readonly error: unknown
-	public declare readonly message: 'Could not properly authenticate to database.'
+	public readonly title = 'Database Connection'
+	public readonly error: unknown
+	public readonly message: 'Could not properly authenticate to database.'
 	constructor(error: unknown) {
 		super()
 		this.error = error
@@ -25,9 +25,9 @@ class AuthError extends Data.TaggedError('Auth') {
 }
 
 class SyncError extends Data.TaggedError('Sync') {
-	public declare readonly title = 'Database Synchronisation'
-	public declare readonly error: unknown
-	public declare readonly message: 'Could not properly synchronise database.'
+	public readonly title = 'Database Synchronisation'
+	public readonly error: unknown
+	public readonly message: 'Could not properly synchronise database.'
 	constructor(error: unknown) {
 		super()
 		this.error = error
@@ -36,7 +36,7 @@ class SyncError extends Data.TaggedError('Sync') {
 
 export class QueryError extends Data.TaggedError('Query') {
 	public readonly title = 'Database Query'
-	public declare readonly error: unknown
+	public readonly error: unknown
 	public readonly message = 'Could not perform database query.'
 	constructor(error: unknown) {
 		super()

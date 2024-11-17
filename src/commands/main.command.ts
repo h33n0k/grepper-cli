@@ -11,6 +11,8 @@ import highlight from 'cli-highlight'
 export type CommandArgs = {
 	query: string
 	limit: number
+	nocache: boolean
+	format: 'pretty' | 'json'
 }
 
 export const command = ['$0', 'query [query]']
@@ -30,7 +32,7 @@ export const builder = (yargs: yargs.Argv) =>
 	(yargs as yargs.Argv<CommandArgs>)
 		.option('query', {
 			alias: 'q',
-			describe: 'Your search',
+			describe: 'Your query.',
 			type: 'string',
 			demandOption: false
 		})
@@ -40,12 +42,23 @@ export const builder = (yargs: yargs.Argv) =>
 			type: 'number',
 			default: 3
 		})
+		.option('nocache', {
+			describe: "Don't use cached answers nor prompts.",
+			type: 'boolean',
+			default: false
+		})
+		.option('format', {
+			alias: 'f',
+			describe: 'Define output format.',
+			choices: ['pretty', 'json'],
+			default: 'pretty'
+		})
 
-export const handler = (argv: yargs.ArgumentsCamelCase<CommandArgs>) =>
+export const handler = (args: yargs.ArgumentsCamelCase<CommandArgs>) =>
 	utils.config.get.pipe(
 		Effect.andThen((config) =>
 			Effect.gen(function* () {
-				if (config.useDatabase) {
+				if (config.useDatabase && !args.nocache) {
 					yield* utils.database.connect()
 				}
 
@@ -54,12 +67,12 @@ export const handler = (argv: yargs.ArgumentsCamelCase<CommandArgs>) =>
 		),
 		Effect.flatMap((config) =>
 			Effect.gen(function* () {
-				let query = argv.query
+				let query = args.query
 
 				if (!query) {
 					let suggestions: services.suggestion.Suggestion[] = []
 
-					if (config.useDatabase) {
+					if (config.useDatabase && !args.nocache) {
 						suggestions = yield* services.suggestion.loadAnswers
 					}
 
@@ -82,7 +95,7 @@ export const handler = (argv: yargs.ArgumentsCamelCase<CommandArgs>) =>
 							fetched: AnswerModel[]
 						} = { cached: [], fetched: [] }
 
-						if (config.useDatabase) {
+						if (config.useDatabase && !args.nocache) {
 							prompt = yield* services.prompt.create(query)
 							results.cached = yield* services.prompt.getResults(prompt)
 						}
@@ -95,17 +108,18 @@ export const handler = (argv: yargs.ArgumentsCamelCase<CommandArgs>) =>
 						const fetched = yield* utils.api.search(prompt ? prompt.input : query)
 						let answers: schemas.answer.Answer[] = [...fetched]
 
-						if (prompt && config.useDatabase) {
+						if (prompt && config.useDatabase && !args.nocache) {
 							yield* services.prompt.saveResults(prompt, fetched as schemas.answer.Answer[])
-							answers = [...yield* services.prompt.getResults(prompt)].map((answer): schemas.answer.Answer => ({
-								id: answer.id,
-								title: answer.title,
-								author_name: answer.author_name,
-								content: answer.content,
-								upvotes: answer.upvotes,
-								downvotes: answer.downvotes
-							}))
-
+							answers = [...(yield* services.prompt.getResults(prompt))].map(
+								(answer): schemas.answer.Answer => ({
+									id: answer.id,
+									title: answer.title,
+									author_name: answer.author_name,
+									content: answer.content,
+									upvotes: answer.upvotes,
+									downvotes: answer.downvotes
+								})
+							)
 						}
 
 						return answers
@@ -118,29 +132,35 @@ export const handler = (argv: yargs.ArgumentsCamelCase<CommandArgs>) =>
 				)
 			)
 		),
-		Effect.map((answers) => answers.sort((a, b) => {
-			return (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes)
-		})),
-		Effect.flatMap((answers) =>
-			Effect.gen(function* () {
-				for (let i = 0; i < answers.length; i++) {
-					const answer = answers[i]
-					const box = yield* components.Box(answer.content, {
-						title: colors.blue(answer.title),
-						contentStyle: highlight,
-						numbers: true,
-						subtexts: [
-							answer.author_name,
-							colors.green(`[+${answer.upvotes}]`),
-							colors.red(`[+${answer.downvotes}]`)
-						]
-					})
-					console.log(`${box}${i !== answers.length - 1 ? '\n' : ''}`)
-				}
+		Effect.map((answers) =>
+			answers.sort((a, b) => {
+				return b.upvotes - b.downvotes - (a.upvotes - a.downvotes)
 			})
 		),
-		Effect.catchAll((error) => {
-			return utils.logger.fatal(error)
-		}),
-		Effect.runPromise
+		Effect.map((answers) => answers.slice(0, args.limit)),
+		Effect.flatMap((answers) =>
+			Effect.gen(function* () {
+				switch (args.format) {
+					case 'json':
+						console.log(answers)
+						break
+					default:
+						for (let i = 0; i < answers.length; i++) {
+							const answer = answers[i]
+							const box = yield* components.Box(answer.content, {
+								title: colors.blue(answer.title),
+								contentStyle: highlight,
+								numbers: true,
+								subtexts: [
+									answer.author_name,
+									colors.green(`[+${answer.upvotes}]`),
+									colors.red(`[+${answer.downvotes}]`)
+								]
+							})
+							console.log(`${box}${i !== answers.length - 1 ? '\n' : ''}`)
+						}
+						break
+				}
+			})
+		)
 	)

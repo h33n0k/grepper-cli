@@ -38,7 +38,7 @@ const defaultConfig = new Config({
 })
 
 class ConfigError extends Data.TaggedError('Config') {
-	public declare readonly title = 'Config Error'
+	public readonly title = 'Config Error'
 	public readonly message: string
 	constructor(error: unknown) {
 		super()
@@ -47,7 +47,7 @@ class ConfigError extends Data.TaggedError('Config') {
 		switch (true) {
 			case error instanceof ValidationError:
 				if (error.constraints) {
-					this.message = `${error.constraints[Object.keys(error.constraints)[0]]}`
+					this.message = `Parameter ${error.constraints[Object.keys(error.constraints)[0]]}.`
 				}
 
 				break

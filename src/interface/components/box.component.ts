@@ -38,7 +38,9 @@ export default (content: string, custom: Partial<BoxOptions>) =>
 				Effect.flatMap((columns) =>
 					Effect.try({
 						try: () => {
-							const contentLines = options.contentStyle(content).trim().replace('\n\n', '\n').split('\n')
+							const contentLines = options
+								.contentStyle(content.trim().replace('\n\n', '\n'))
+								.split('\n')
 							const border: Border = borders[options.border]
 
 							const spaces = (n: number, c: string = ' ') =>

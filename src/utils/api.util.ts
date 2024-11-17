@@ -86,7 +86,7 @@ class RequestError extends Data.TaggedError('Request') {
 }
 
 class ResponseError extends Data.TaggedError('Response') {
-	public declare readonly title = 'Response Error'
+	public readonly title = 'Response Error'
 	public readonly message: string
 	public readonly status: number
 	constructor(response: Response) {
