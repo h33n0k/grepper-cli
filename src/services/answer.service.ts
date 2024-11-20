@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 import * as schemas from '../schemas'
 import { AnswerModel } from '../models'
-import * as utils from '../utils'
+import { DatabaseHandler } from '../handlers'
 
 export const create = (input: schemas.answer.Answer) =>
 	Effect.gen(function* () {
@@ -11,7 +11,7 @@ export const create = (input: schemas.answer.Answer) =>
 					where: { id: input.id },
 					defaults: input
 				}),
-			catch: (error) => new utils.database.QueryError(error)
+			catch: (error) => new DatabaseHandler.QueryError(error)
 		})
 
 		return answer

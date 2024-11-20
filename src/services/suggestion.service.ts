@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 import { AnswerModel, PromptModel } from '../models'
-import * as utils from '../utils'
+import { DatabaseHandler } from '../handlers'
 
 export interface Suggestion {
 	text: string
@@ -17,7 +17,7 @@ export const loadAnswers = Effect.gen(function* () {
 				order: [['updatedAt', 'DESC']],
 				limit: 30
 			}),
-		catch: (error) => new utils.database.QueryError(error)
+		catch: (error) => new DatabaseHandler.QueryError(error)
 	})
 
 	const answers = yield* Effect.tryPromise({
@@ -26,7 +26,7 @@ export const loadAnswers = Effect.gen(function* () {
 				limit: 30,
 				order: [['score', 'DESC']]
 			}),
-		catch: (error) => new utils.database.QueryError(error)
+		catch: (error) => new DatabaseHandler.QueryError(error)
 	})
 
 	return [...prompts, ...answers]

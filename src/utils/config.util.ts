@@ -4,12 +4,12 @@ import {
 	IsNumber,
 	IsOptional,
 	IsString,
-	validate as validateClass,
-	ValidationError
+	validate as validateClass
 } from 'class-validator'
 import path from 'path'
-import { Data, Effect } from 'effect'
+import { Effect } from 'effect'
 import * as fileUtil from './file.util'
+import { ConfigHandler } from '../handlers'
 
 export class Config {
 	@IsOptional()
@@ -31,48 +31,29 @@ export class Config {
 	}
 }
 
-const defaultConfig = new Config({
+export const defaultConfig = new Config({
 	useDatabase: true,
 	requestTimeout: 5000,
 	requestRetryAmount: 3
 })
 
-class ConfigError extends Data.TaggedError('Config') {
-	public readonly title = 'Config Error'
-	public readonly message: string
-	constructor(error: unknown) {
-		super()
-		this.message = 'Unexpected Error has occured during the validation of the configuration file.'
-
-		switch (true) {
-			case error instanceof ValidationError:
-				if (error.constraints) {
-					this.message = `Parameter ${error.constraints[Object.keys(error.constraints)[0]]}.`
-				}
-
-				break
-			case error instanceof SyntaxError:
-				this.message = 'Failed to parse conguration file.'
-				break
-		}
-	}
-}
-
-const validate = (config: Config) =>
+export const validate = (config: Config) =>
 	Effect.tryPromise({
 		try: () => validateClass(config),
-		catch: () => new ConfigError('unexpected')
+		catch: () => new ConfigHandler.ConfigError('unexpected')
 	}).pipe(
 		Effect.flatMap((errors) =>
-			errors.length > 0 ? Effect.fail(new ConfigError(errors[0])) : Effect.succeed(config)
+			errors.length > 0
+				? Effect.fail(new ConfigHandler.ConfigError(errors[0]))
+				: Effect.succeed(config)
 		)
 	)
 
-const configFile = fileUtil.getConfigDir.pipe(
+export const configFile = fileUtil.getConfigDir.pipe(
 	Effect.flatMap((dir) => Effect.succeed(path.join(dir, 'config.json')))
 )
 
-const write = (config: Config) =>
+export const write = (config: Config) =>
 	validate(config).pipe(
 		Effect.flatMap((config) =>
 			Effect.gen(function* () {
@@ -86,13 +67,13 @@ const write = (config: Config) =>
 
 export const set = <K extends keyof Config>(key: K, value: Config[K]) =>
 	Effect.gen(function* () {
-		const config = yield* get
+		const config = yield* load
 		config[key] = value
 
 		return config
 	}).pipe(Effect.flatMap(write))
 
-export const get = configFile.pipe(
+export const load = configFile.pipe(
 	Effect.flatMap((file) =>
 		fileUtil.exists(file).pipe(
 			// check if file exists
@@ -103,7 +84,7 @@ export const get = configFile.pipe(
 						Effect.try({
 							// parse content to json
 							try: () => JSON.parse(content),
-							catch: (error) => new ConfigError(error)
+							catch: (error) => new ConfigHandler.ConfigError(error)
 						})
 					),
 					Effect.flatMap((json) => Effect.succeed(new Config(json))),

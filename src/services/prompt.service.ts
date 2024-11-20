@@ -2,7 +2,7 @@ import { Effect } from 'effect'
 import { AnswerModel, PromptModel } from '../models'
 import * as AnswerService from './answer.service'
 import * as schemas from '../schemas'
-import * as utils from '../utils'
+import { DatabaseHandler } from '../handlers'
 
 export const create = (input: string) =>
 	Effect.gen(function* () {
@@ -16,13 +16,13 @@ export const create = (input: string) =>
 					},
 					defaults: { input }
 				}),
-			catch: (error) => new utils.database.QueryError(error)
+			catch: (error) => new DatabaseHandler.QueryError(error)
 		})
 
 		if (!created) {
 			yield* Effect.tryPromise({
 				try: () => prompt.update('updatedAt', new Date()),
-				catch: (error) => new utils.database.QueryError(error)
+				catch: (error) => new DatabaseHandler.QueryError(error)
 			})
 		}
 
@@ -32,7 +32,7 @@ export const create = (input: string) =>
 export const getResults = (prompt: PromptModel) =>
 	Effect.tryPromise({
 		try: () => prompt.$get('results'),
-		catch: (error) => new utils.database.QueryError(error)
+		catch: (error) => new DatabaseHandler.QueryError(error)
 	})
 
 export const saveResults = (prompt: PromptModel, answers: schemas.answer.Answer[]) =>
@@ -44,7 +44,7 @@ export const saveResults = (prompt: PromptModel, answers: schemas.answer.Answer[
 
 		yield* Effect.tryPromise({
 			try: () => prompt.$set('results', models),
-			catch: (error) => new utils.database.QueryError(error)
+			catch: (error) => new DatabaseHandler.QueryError(error)
 		})
 
 		return prompt

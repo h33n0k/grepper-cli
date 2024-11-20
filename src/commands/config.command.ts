@@ -1,7 +1,8 @@
 import yargs from 'yargs'
-import { Data, Effect } from 'effect'
+import { Effect } from 'effect'
 import * as utils from '../utils'
 import highlight from 'cli-highlight'
+import { ConfigHandler } from '../handlers'
 
 export type CommandArgs = {
 	param: string
@@ -22,18 +23,9 @@ export const builder = (yargs: yargs.Argv) =>
 			default: ''
 		})
 
-class ConfigError extends Data.TaggedError('Config') {
-	public readonly title = 'Config Error'
-	public readonly message: string
-	constructor(message: string) {
-		super()
-		this.message = message
-	}
-}
-
 export const handler = (args: yargs.ArgumentsCamelCase<CommandArgs>) =>
 	Effect.gen(function* () {
-		const config = yield* utils.config.get
+		const config = yield* utils.config.load
 
 		if (!args.param) {
 			console.log(highlight(JSON.stringify(config, null, '\t')))
@@ -54,6 +46,6 @@ export const handler = (args: yargs.ArgumentsCamelCase<CommandArgs>) =>
 				console.log(config[args.param as keyof typeof config])
 			}
 		} else {
-			return yield* Effect.fail(new ConfigError('Invalid Parameter.'))
+			return yield* Effect.fail(new ConfigHandler.ConfigError(new Error('invalid_parameter')))
 		}
 	})

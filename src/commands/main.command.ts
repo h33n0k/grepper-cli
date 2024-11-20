@@ -55,7 +55,7 @@ export const builder = (yargs: yargs.Argv) =>
 		})
 
 export const handler = (args: yargs.ArgumentsCamelCase<CommandArgs>) =>
-	utils.config.get.pipe(
+	utils.config.load.pipe(
 		Effect.andThen((config) =>
 			Effect.gen(function* () {
 				if (config.useDatabase && !args.nocache) {

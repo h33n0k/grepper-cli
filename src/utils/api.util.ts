@@ -1,4 +1,5 @@
-import { Data, Effect, Schedule } from 'effect'
+import { Effect, Schedule } from 'effect'
+import { ApiHandler } from '../handlers'
 import colors from '@colors/colors'
 import * as configUtil from './config.util'
 import { input } from '../interface'
@@ -33,86 +34,8 @@ export const endpoints = new Proxy<endpointsProxy>(
 	}
 )
 
-class RequestError extends Data.TaggedError('Request') {
-	public readonly title = 'Request Error'
-	public readonly error: unknown
-	public readonly message: string
-	constructor(error: unknown) {
-		super()
-		this.error = error
-		this.message = this.getMessage()
-	}
-
-	private getMessage() {
-		let message = 'Unexpected Error.'
-
-		if (this.error && typeof this.error === 'object') {
-			switch (true) {
-				case this.error instanceof TypeError:
-					if (
-						'cause' in this.error &&
-						this.error.cause &&
-						typeof this.error.cause === 'object' &&
-						'code' in this.error.cause &&
-						this.error.cause.code &&
-						typeof this.error.cause.code === 'string'
-					) {
-						switch (this.error.cause.code) {
-							case 'ECONNREFUSED':
-								message = 'Connection refused.'
-								break
-							case 'ENOTFOUND':
-								message = 'Server not found.'
-								break
-							case 'ETIMEDOUT':
-								message = 'Request timed out.'
-								break
-						}
-					}
-
-					break
-				case 'name' in this.error:
-					switch (this.error.name) {
-						case 'AbortError':
-							message = 'Request timed out.'
-							break
-					}
-					break
-			}
-		}
-
-		return message
-	}
-}
-
-class ResponseError extends Data.TaggedError('Response') {
-	public readonly title = 'Response Error'
-	public readonly message: string
-	public readonly status: number
-	constructor(response: Response) {
-		super()
-		this.status = response.status
-		this.message = this.getMessage()
-	}
-
-	private getMessage() {
-		switch (this.status) {
-			case 401:
-				return 'Invalid API KEY.'
-			case 429:
-				return 'Too many requests.'
-			case 500:
-				return 'Internal Grepper error.'
-			case 503:
-				return 'Temporarily offline, try again later.'
-			default:
-				return 'An unknown error occurred. Please try again.'
-		}
-	}
-}
-
-const query = (url: string) =>
-	configUtil.get.pipe(
+export const query = (url: string) =>
+	configUtil.load.pipe(
 		Effect.flatMap((config) => {
 			if (!config.api_key) {
 				return input
@@ -146,7 +69,7 @@ const query = (url: string) =>
 							}).finally(() => clearTimeout(timeout))
 						},
 						catch: (error) => {
-							const err = new RequestError(error)
+							const err = new ApiHandler.RequestError(error)
 
 							if (i !== config.requestRetryAmount) {
 								logger.warn(`${err.message} Retrying.`)
@@ -159,12 +82,12 @@ const query = (url: string) =>
 				)
 
 				if (!response.ok) {
-					return yield* Effect.fail(new ResponseError(response))
+					return yield* Effect.fail(new ApiHandler.ResponseError(response))
 				}
 
 				const json = yield* Effect.tryPromise({
 					try: () => response.json(),
-					catch: (error) => new RequestError(error)
+					catch: (error) => new ApiHandler.RequestError(error)
 				})
 
 				return json

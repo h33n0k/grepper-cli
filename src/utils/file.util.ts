@@ -2,69 +2,8 @@ import os from 'os'
 import path from 'path'
 import fs from 'fs'
 import stream from 'stream'
-import { Effect, Data } from 'effect'
-
-class ConfigDirError extends Data.TaggedError('ConfigDir') {
-	public readonly title = 'Config Error'
-	public readonly message: string
-	constructor(error: 'platform') {
-		super()
-		switch (error) {
-			case 'platform':
-				this.message = 'Unsupported OS Platform.'
-				break
-		}
-	}
-}
-
-export class PathError extends Data.TaggedError('Path') {
-	public readonly title = 'Invalid Path'
-	public readonly path: string
-	public readonly message: string
-	constructor(path: string) {
-		super()
-		this.path = path
-		this.message = `File or directory not found ${this.path}.`
-	}
-}
-
-export class FileError extends Data.TaggedError('File') {
-	public readonly title = 'File System'
-	public readonly code: string
-	public readonly message: string
-	public readonly path: string
-	constructor(error: NodeJS.ErrnoException, p: string) {
-		super()
-		this.code = error.code || 'UNEXPECTED'
-		this.path = p
-		this.message = this.getMessage()
-	}
-
-	private getMessage(): string {
-		switch (this.code) {
-			case 'EACCES':
-				return `Permission denied ${this.path}.`
-			case 'ENOENT':
-				return `File or directory not found ${this.path}.`
-			case 'EEXIST':
-				return `File already exists ${this.path}.`
-			case 'ENOTDIR':
-				return `Not a directory ${this.path}`
-			case 'EISDIR':
-				return `Is a directory ${this.path}`
-			case 'EMFILE':
-				return `Too many open files`
-			case 'ENOSPC':
-				return `No space left ${this.path}.`
-			case 'EROFS':
-				return `Read-only file system ${this.path}`
-			case 'UNEXPECTED':
-				return `Unexpected error ${this.path}`
-			default:
-				return `Unknown filesystem error (${this.code}) at ${this.path}`
-		}
-	}
-}
+import { Effect } from 'effect'
+import { FileHandler } from '../handlers'
 
 export const exists = (file: string) =>
 	Effect.gen(function* () {
@@ -72,7 +11,7 @@ export const exists = (file: string) =>
 			return yield* Effect.succeed(file)
 		}
 
-		return yield* Effect.fail(new PathError(file))
+		return yield* Effect.fail(new FileHandler.PathError(file))
 	})
 
 export const getConfigDir = Effect.gen(function* () {
@@ -82,7 +21,7 @@ export const getConfigDir = Effect.gen(function* () {
 			dir = path.join(os.homedir(), '.config', 'grepper-cli')
 			break
 		default:
-			return yield* Effect.fail(new ConfigDirError('platform'))
+			return yield* Effect.fail(new FileHandler.ConfigDirError('platform'))
 	}
 
 	const dirExists = yield* exists(dir).pipe(
@@ -104,7 +43,7 @@ export const getConfigDir = Effect.gen(function* () {
 						resolve()
 					})
 				}),
-			catch: (error) => new FileError(error as NodeJS.ErrnoException, dir)
+			catch: (error) => new FileHandler.FileError(error as NodeJS.ErrnoException, dir)
 		})
 	}
 
@@ -124,7 +63,7 @@ export const read = (file: string) =>
 					readStream.on('end', () => resolve(data))
 					readStream.on('error', (error) => reject(error))
 				}),
-			catch: (error) => new FileError(error as NodeJS.ErrnoException, file)
+			catch: (error) => new FileHandler.FileError(error as NodeJS.ErrnoException, file)
 		})
 	})
 
@@ -149,7 +88,7 @@ export const write = (file: string, content: string) =>
 					transformStream.end()
 				})
 			},
-			catch: (error) => new FileError(error as NodeJS.ErrnoException, file)
+			catch: (error) => new FileHandler.FileError(error as NodeJS.ErrnoException, file)
 		})
 
 		return file
