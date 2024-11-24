@@ -6,16 +6,16 @@ export interface Suggestion {
 	text: string
 }
 
-export const loadAnswers = Effect.gen(function* () {
+export const load = Effect.gen(function* () {
 	const prompts = yield* Effect.tryPromise({
 		try: () =>
 			PromptModel.findAll({
 				include: {
 					model: AnswerModel,
-					order: [['upvotes', 'DESC']]
+					order: [['createdAt', 'DESC']]
 				},
-				order: [['updatedAt', 'DESC']],
-				limit: 30
+				order: [['lastUse', 'DESC']],
+				limit: 15
 			}),
 		catch: (error) => new DatabaseHandler.QueryError(error)
 	})
@@ -23,7 +23,7 @@ export const loadAnswers = Effect.gen(function* () {
 	const answers = yield* Effect.tryPromise({
 		try: () =>
 			AnswerModel.findAll({
-				limit: 30,
+				limit: 15,
 				order: [['score', 'DESC']]
 			}),
 		catch: (error) => new DatabaseHandler.QueryError(error)

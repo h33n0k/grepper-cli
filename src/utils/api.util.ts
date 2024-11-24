@@ -37,7 +37,7 @@ export const endpoints = new Proxy<endpointsProxy>(
 export const query = (url: string) =>
 	configUtil.load.pipe(
 		Effect.flatMap((config) => {
-			if (!config.api_key) {
+			if (!config.api_key || config.api_key === '') {
 				return input
 					.ask({
 						label: {

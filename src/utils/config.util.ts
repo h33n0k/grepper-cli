@@ -1,21 +1,12 @@
-import {
-	IsBoolean,
-	IsNotEmpty,
-	IsNumber,
-	IsOptional,
-	IsString,
-	validate as validateClass
-} from 'class-validator'
+import { IsBoolean, IsNumber, IsString, validate as validateClass } from 'class-validator'
 import path from 'path'
 import { Effect } from 'effect'
 import * as fileUtil from './file.util'
 import { ConfigHandler } from '../handlers'
 
 export class Config {
-	@IsOptional()
 	@IsString()
-	@IsNotEmpty()
-	api_key?: string
+	api_key: string
 
 	@IsBoolean()
 	useDatabase: boolean
@@ -34,7 +25,8 @@ export class Config {
 export const defaultConfig = new Config({
 	useDatabase: true,
 	requestTimeout: 5000,
-	requestRetryAmount: 3
+	requestRetryAmount: 3,
+	api_key: ''
 })
 
 export const validate = (config: Config) =>

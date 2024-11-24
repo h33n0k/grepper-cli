@@ -73,7 +73,7 @@ export const handler = (args: yargs.ArgumentsCamelCase<CommandArgs>) =>
 					let suggestions: services.suggestion.Suggestion[] = []
 
 					if (config.useDatabase && !args.nocache) {
-						suggestions = yield* services.suggestion.loadAnswers
+						suggestions = yield* services.suggestion.load
 					}
 
 					query = yield* input.ask({
@@ -97,7 +97,10 @@ export const handler = (args: yargs.ArgumentsCamelCase<CommandArgs>) =>
 
 						if (config.useDatabase && !args.nocache) {
 							prompt = yield* services.prompt.create(query)
-							results.cached = yield* services.prompt.getResults(prompt)
+
+							if (prompt.results) {
+								results.cached = prompt.results
+							}
 						}
 
 						return { prompt, results, query }
@@ -110,7 +113,7 @@ export const handler = (args: yargs.ArgumentsCamelCase<CommandArgs>) =>
 
 						if (prompt && config.useDatabase && !args.nocache) {
 							yield* services.prompt.saveResults(prompt, fetched as schemas.answer.Answer[])
-							answers = [...(yield* services.prompt.getResults(prompt))].map(
+							answers = [...answers, ...results.cached].map(
 								(answer): schemas.answer.Answer => ({
 									id: answer.id,
 									title: answer.title,

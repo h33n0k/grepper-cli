@@ -8,6 +8,7 @@ import {
 	Model,
 	PrimaryKey,
 	Table,
+	Unique,
 	UpdatedAt
 } from 'sequelize-typescript'
 import AnswerModel from './answer.model'
@@ -24,6 +25,7 @@ export default class Prompt extends Model<Prompt, { input: string }> {
 	@Column
 	declare id: number
 
+	@Unique
 	@AllowNull(false)
 	@Column({
 		type: DataType.TEXT,
@@ -33,6 +35,12 @@ export default class Prompt extends Model<Prompt, { input: string }> {
 
 	@BelongsToMany(() => AnswerModel, () => MatchModel)
 	declare results: AnswerModel[]
+
+	@Column({
+		type: DataType.DATE,
+		defaultValue: DataType.NOW
+	})
+	declare lastUse: Date
 
 	@UpdatedAt
 	@Column
