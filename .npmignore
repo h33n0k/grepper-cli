@@ -1,0 +1,17 @@
+# Exclude build artifacts
+dist/
+
+# Exclude dependency directory
+node_modules/
+
+# Exclude test files and configurations
+test/
+tsconfig.test.json
+jest.config.cjs
+
+# Exclude lock files and environment-specific files
+yarn.lock
+
+# Exclude git-related files
+.git/
+.gitignore

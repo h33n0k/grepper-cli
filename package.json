@@ -1,6 +1,6 @@
 {
 	"name": "grepper",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"license": "MIT",
 	"author": "Valentin Gorrin <valentin@gorr.in> (https://tree.gorr.in)",
 	"description": "CLI tool for the grepper api.",
@@ -12,14 +12,14 @@
 	"bugs": {
 		"url": "https://github.com/h33n0k/grepper-cli/issues"
 	},
-	"main": "dist/index.js",
+	"main": "src/index.ts",
 	"bin": "dist/index.js",
 	"scripts": {
 		"start": "node dist/index.js",
 		"dev": "ts-node-dev --transpile-only --quiet src/index.ts",
 		"lint": "eslint -c ./.eslintrc.cjs \"./**/*.{js,ts}\" --fix",
 		"test": "jest",
-		"clean": "rm -rf dist/; rm -rf pkg/",
+		"clean": "rm -rf dist/; rm -rf bin/",
 		"build": "npx tsc -p ./tsconfig.build.json",
 		"pkg": "pkg .",
 		"release": "standard-version"
@@ -29,11 +29,22 @@
 	},
 	"pkg": {
 		"scripts": "dist/index.js",
+		"assets": "node_modules/sqlite3/build/Release/node_sqlite3.node",
 		"targets": [
 			"node18.5.0-linux-x64"
 		],
 		"outputPath": "bin/"
 	},
+	"files": [
+		"bin/",
+		"src/",
+		"RELEASE_NOTES.md",
+		"CHANGELOG.md",
+		"LICENSE",
+		"package.json",
+		"tsconfig.json",
+		"tsconfig.build.json"
+	],
 	"dependencies": {
 		"@colors/colors": "^1.6.0",
 		"@effect/schema": "^0.75.5",
